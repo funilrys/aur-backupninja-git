@@ -40,6 +40,7 @@ jobs:
           GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
         run: |
           buildDir="${PWD}"
+          aurCommitMessage="$(git log -1 --pretty=format:%B)"
 
           git clone ssh://aur@aur.archlinux.org/backupninja-git.git ~/backupninja-git
 
@@ -56,7 +57,7 @@ jobs:
           cd ~/backupninja-git
 
           git add .
-          git diff --quiet --exit-code --cached || git commit -m "$(git log -1 --pretty=format:%B)"
+          git diff --quiet --exit-code --cached || git commit -m "${aurCommitMessage}"
           git push origin master
 
           cd ${buildDir}
