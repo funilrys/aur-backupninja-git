@@ -56,7 +56,7 @@ jobs:
           cd ~/backupninja-git
 
           git add .
-          git commit -m "${git log -1 --pretty=format:%B}"
+          git commit -m "$(git log -1 --pretty=format:%B)"
           git push origin master
 
           cd ${buildDir}
