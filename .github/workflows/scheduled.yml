@@ -1,8 +1,7 @@
 name: AUR package update Workflow
 on:
-  push:
-    branches:
-      - master
+  schedule:
+    - cron: "0 6 * * 0"
 
 jobs:
   update:
@@ -39,9 +38,20 @@ jobs:
         env:
           GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
         run: |
+          current=$(grep -P "^pkgver" PKGBUILD | cut -d= -f2)
           buildDir="${PWD}"
 
+          git clone https://0xacab.org/liberate/backupninja.git /tmp/backupninja
           git clone ssh://aur@aur.archlinux.org/backupninja-git.git ~/backupninja-git
+
+          cd /tmp/backupninja
+          latest=$(printf "%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)")
+          cd ${buildDir}
+
+          echo "Previous version: ${current}"
+          echo "New version: ${latest}"
+
+          [[ "${current}" == "${latest}" ]] && exit 0
 
           useradd makepkg
           chown makepkg:root . -R
@@ -58,11 +68,11 @@ jobs:
           cd ~/backupninja-git
 
           git add .
-          git commit -m "${git log -1 --pretty=format:%B}"
+          git commit -m "Update backupninja-git to v${latest}"
           git push origin master
 
           cd ${buildDir}
 
           git add .
-          git commit -m "Update .SRCINFO"
+          git commit -m "Update backupninja-git to v${latest}"
           git push origin master
