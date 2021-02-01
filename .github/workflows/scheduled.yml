@@ -57,6 +57,7 @@ jobs:
           chown makepkg:root . -R
 
           sed "/^pkgver=/s/.*/pkgver=${latest}/" -i PKGBUILD
+          sed "/^pkgrel=/s/.*/pkgrel=1/" -i PKGBUILD
 
           su makepkg -c "makepkg --printsrcinfo" > .SRCINFO
 
