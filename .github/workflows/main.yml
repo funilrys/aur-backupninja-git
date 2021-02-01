@@ -1,0 +1,81 @@
+name: AUR package update Workflow
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 6 * * 0"
+
+jobs:
+  update:
+    name: "Update repository"
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux
+
+    steps:
+      - name: Store the SSH key
+        run: |
+          echo "${{ secrets.MY_SSH_KEY }}" | install -Dm600 /dev/stdin /root/.ssh/id_rsa
+
+      - name: Get time for cache
+        id: cache_time
+        run: echo "::set-output name=time::$(date +%F-%T)"
+
+      - name: Set up cache
+        uses: actions/cache@master
+        with:
+          path: /var/cache/pacman/pkg
+          key: pacman-cache-x86_64-${{ steps.cache_time.outputs.time }}
+          restore-keys: pacman-cache-x86_64-
+
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --needed --noconfirm git binutils pacman-contrib openssh
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Update if necessary
+        env:
+          GIT_SSH_COMMAND: "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
+        run: |
+          current=$(grep -P "^pkgver" PKGBUILD | cut -d= -f2)
+          buildDir="${PWD}"
+
+          git clone https://0xacab.org/liberate/backupninja.git /tmp/backupninja
+          git clone ssh://aur@aur.archlinux.org/backupninja-git.git ~/backupninja-git
+
+          cd /tmp/backupninja
+          latest=$(printf "%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)")
+          cd ${buildDir}
+
+          echo "Previous version: ${current}"
+          echo "New version: ${latest}"
+
+          [[ "${current}" == "${latest}" ]] && exit 0
+
+          useradd makepkg
+          chown makepkg:root . -R
+
+          sed "/^pkgver=/s/.*/pkgver=${latest}/" -i PKGBUILD
+
+          su makepkg -c "makepkg --printsrcinfo" > .SRCINFO
+
+          git config user.name ${{ secrets.MY_GIT_NAME }}
+          git config user.email ${{ secrets.MY_GIT_EMAIL }}
+
+          find . -maxdepth 1 -type f -exec cp -uv {} ~/backupninja-git \;
+
+          cd ~/backupninja-git
+
+          git add .
+          git commit -m "Update backupninja-git to v${latest}"
+          git push origin master
+
+          cd ${buildDir}
+
+          git add .
+          git commit -m "Update backupninja-git to v${latest}"
+          git push origin master
