@@ -46,8 +46,6 @@ jobs:
           useradd makepkg
           chown makepkg:root . -R
 
-          sed "/^pkgver=/s/.*/pkgver=${latest}/" -i PKGBUILD
-
           su makepkg -c "makepkg --printsrcinfo" > .SRCINFO
 
           git config --global user.name ${{ secrets.MY_GIT_NAME }}
