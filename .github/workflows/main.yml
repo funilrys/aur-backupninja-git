@@ -56,11 +56,11 @@ jobs:
           cd ~/backupninja-git
 
           git add .
-          git commit -m "$(git log -1 --pretty=format:%B)"
+          git diff --quiet --exit-code --cached || git commit -m "$(git log -1 --pretty=format:%B)"
           git push origin master
 
           cd ${buildDir}
 
           git add .
-          git commit -m "Update .SRCINFO"
+          git diff --quiet --exit-code --cached || git commit -m "Update .SRCINFO"
           git push origin master
