@@ -1,4 +1,4 @@
-name: AUR package update Workflow
+name: Scheduled AUR package update Workflow
 on:
   schedule:
     - cron: "0 6 * * 0"
