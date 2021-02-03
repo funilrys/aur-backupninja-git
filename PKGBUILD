@@ -35,7 +35,6 @@ package() {
     cd "$srcdir/$_pkgname"
     make DESTDIR="$pkgdir" install
     chmod a-x $pkgdir/usr/lib/$_pkgname/parseini
-    chmod a-x $pkgdir/usr/lib/$_pkgname/vserver
     mkdir -p "$pkgdir/usr/share/doc/$_pkgname/examples"
     install -Dm644 $pkgdir/usr/share/$_pkgname/example.* $pkgdir/usr/share/doc/$_pkgname/examples
     rm $pkgdir/usr/share/$_pkgname/example.*
