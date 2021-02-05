@@ -2,7 +2,7 @@
 _pkgname=backupninja
 pkgname=$_pkgname-git
 pkgver=1113.5cc8040
-pkgrel=2
+pkgrel=3
 pkgdesc="A centralized way to configure and schedule many different backup utilities"
 arch=('any')
 url="https://0xacab.org/liberate/backupninja"
