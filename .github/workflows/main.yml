@@ -9,7 +9,7 @@ jobs:
     name: "Update repository"
     runs-on: ubuntu-latest
     container:
-      image: archlinux
+      image: archlinux/archlinux:latest
 
     steps:
       - name: Store the SSH key
@@ -29,8 +29,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pacman -Syu --noconfirm
+          curl -LO "https://repo.archlinuxcn.org/x86_64/${patched_glibc}" && \
+          bsdtar -C / -xvf "$patched_glibc" && \
+          rm ${patched_glibc} && \
+          pacman -Syu --needed --noconfirm && \
           pacman -S --needed --noconfirm git binutils pacman-contrib openssh
+        env:
+          patched_glibc: glibc-linux4-2.33-4-x86_64.pkg.tar.zst
+
 
       - name: Checkout Repository
         uses: actions/checkout@v2
